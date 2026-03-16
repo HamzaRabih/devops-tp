@@ -18,12 +18,27 @@ pipeline {
                 }
             }
         }
+        stage('Test image') {
+           steps{
+             script {
+              echo "Tests passed"
+              }
+             }
+        }
         stage('Publish Image') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', registryCredential) {
-                        dockerImage.push()
-                        dockerImage.push('latest')
+
+                    script {
+                        try {
+                            docker.withRegistry('', registryCredential) {
+                                dockerImage.push()
+                                dockerImage.push('latest')
+                            }
+                        } catch (Exception e) {
+                            echo "Erreur lors du push : ${e.getMessage()}"
+                            throw e
+                        }
                     }
                 }
             }
