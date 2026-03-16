@@ -1,7 +1,7 @@
 pipeline {
     environment {
         registry = "hamzarabih/devops-tp4"
-        registryCredential = 'dokerHub' // Ensure this ID matches Jenkins Credentials
+        registryCredential = 'dokerHub'
         dockerImage = ''
     }
     agent any
@@ -14,7 +14,6 @@ pipeline {
         stage('Building image') {
             steps {
                 script {
-                    // Building with both build number and 'latest' tag
                     dockerImage = docker.build("${registry}:${env.BUILD_NUMBER}")
                 }
             }
@@ -22,20 +21,11 @@ pipeline {
         stage('Publish Image') {
             steps {
                 script {
-                    docker.withRegistry('', registryCredential) {
+                    docker.withRegistry('https://index.docker.io/v1/', registryCredential) {
                         dockerImage.push()
                         dockerImage.push('latest')
                     }
                 }
-            }
-        }
-    }
-    post {
-        always {
-            script {
-                // Cleans up the image from the Jenkins node to save space
-                sh "docker rmi ${registry}:${env.BUILD_NUMBER}"
-                sh "docker rmi ${registry}:latest"
             }
         }
     }
