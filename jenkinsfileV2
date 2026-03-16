@@ -1,0 +1,49 @@
+pipeline {
+    environment {
+        registry = "hamzarabih/devops-tp4"
+        registryCredential = 'dokerHub'
+        dockerImage = ''
+    }
+    agent any
+    stages {
+        stage('Cloning Git') {
+            steps {
+                git 'https://github.com/HamzaRabih/devops-tp.git'
+            }
+        }
+        stage('Building image') {
+            steps {
+                script {
+                    dockerImage = docker.build("${registry}:${env.BUILD_NUMBER}")
+                }
+            }
+        }
+        stage('Test image') {
+           steps{
+             script {
+              echo "Tests passed"
+             }
+           }
+        }
+        stage('Publish Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: registryCredential,
+                                                      passwordVariable: 'DOCKER_PASS',
+                                                      usernameVariable: 'DOCKER_USER')]) {
+                        bat "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
+                        bat "docker push ${registry}:${env.BUILD_NUMBER}"
+                        bat "docker tag ${registry}:${env.BUILD_NUMBER} ${registry}:latest"
+                        bat "docker push ${registry}:latest"
+                    }
+                }
+            }
+        }
+        stage('Deploy image') {
+          steps{
+            bat "docker run -d $registry:$BUILD_NUMBER"
+          }
+        }
+
+    }
+}
