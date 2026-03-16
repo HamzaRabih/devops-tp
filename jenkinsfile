@@ -31,10 +31,10 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: registryCredential,
                                                       passwordVariable: 'DOCKER_PASS',
                                                       usernameVariable: 'DOCKER_USER')]) {
-                        sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
-                        sh "docker push ${registry}:${env.BUILD_NUMBER}"
-                        sh "docker tag ${registry}:${env.BUILD_NUMBER} ${registry}:latest"
-                        sh "docker push ${registry}:latest"
+                        bat "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
+                        bat "docker push ${registry}:${env.BUILD_NUMBER}"
+                        bat "docker tag ${registry}:${env.BUILD_NUMBER} ${registry}:latest"
+                        bat "docker push ${registry}:latest"
                     }
                 }
             }
