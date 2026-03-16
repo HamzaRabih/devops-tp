@@ -22,23 +22,19 @@ pipeline {
            steps{
              script {
               echo "Tests passed"
-              }
              }
+           }
         }
         stage('Publish Image') {
             steps {
                 script {
-
-                    script {
-                        try {
-                            docker.withRegistry('', registryCredential) {
-                                dockerImage.push()
-                                dockerImage.push('latest')
-                            }
-                        } catch (Exception e) {
-                            echo "Erreur lors du push : ${e.getMessage()}"
-                            throw e
-                        }
+                    withCredentials([usernamePassword(credentialsId: registryCredential,
+                                                      passwordVariable: 'DOCKER_PASS',
+                                                      usernameVariable: 'DOCKER_USER')]) {
+                        sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
+                        sh "docker push ${registry}:${env.BUILD_NUMBER}"
+                        sh "docker tag ${registry}:${env.BUILD_NUMBER} ${registry}:latest"
+                        sh "docker push ${registry}:latest"
                     }
                 }
             }
